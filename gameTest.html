@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>เกมงู (Snake Game)</title>
+  <style>
+    body {
+      background: #222;
+      color: #fff;
+      text-align: center;
+      font-family: sans-serif;
+    }
+
+    canvas {
+      background: #111;
+      display: block;
+      margin: 20px auto;
+      border: 2px solid #00ff00;
+    }
+
+    h1 {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🐍 เกมงู (Snake Game)</h1>
+  <p>กดปุ่มลูกศร ↑ ↓ ← → เพื่อควบคุมงู</p>
+  <canvas id="gameCanvas" width="400" height="400"></canvas>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const box = 20;
+    const canvasSize = 400;
+    const totalBoxes = canvasSize / box;
+
+    let snake = [{ x: 9 * box, y: 9 * box }];
+    let direction = "RIGHT";
+    let food = {
+      x: Math.floor(Math.random() * totalBoxes) * box,
+      y: Math.floor(Math.random() * totalBoxes) * box
+    };
+    let score = 0;
+
+    document.addEventListener("keydown", changeDirection);
+
+    function changeDirection(event) {
+      if (event.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
+      else if (event.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
+      else if (event.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
+      else if (event.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
+    }
+
+    function draw() {
+      // เคลียร์พื้นหลัง
+      ctx.fillStyle = "#111";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // วาดงู
+      for (let i = 0; i < snake.length; i++) {
+        ctx.fillStyle = i === 0 ? "#0f0" : "#0b0";
+        ctx.fillRect(snake[i].x, snake[i].y, box, box);
+      }
+
+      // วาดอาหาร
+      ctx.fillStyle = "red";
+      ctx.fillRect(food.x, food.y, box, box);
+
+      // ตำแหน่งหัวงู
+      let headX = snake[0].x;
+      let headY = snake[0].y;
+
+      if (direction === "LEFT") headX -= box;
+      if (direction === "RIGHT") headX += box;
+      if (direction === "UP") headY -= box;
+      if (direction === "DOWN") headY += box;
+
+      // ตรวจสอบการกินตัวเองหรือติดขอบ
+      if (
+        headX < 0 || headX >= canvas.width ||
+        headY < 0 || headY >= canvas.height ||
+        snake.some((segment, index) => index !== 0 && segment.x === headX && segment.y === headY)
+      ) {
+        clearInterval(game);
+        alert("เกมจบ! คะแนนของคุณ: " + score);
+        location.reload(); // เริ่มใหม่
+        return;
+      }
+
+      // กินอาหาร
+      if (headX === food.x && headY === food.y) {
+        score++;
+        food = {
+          x: Math.floor(Math.random() * totalBoxes) * box,
+          y: Math.floor(Math.random() * totalBoxes) * box
+        };
+      } else {
+        snake.pop(); // ลบหางถ้าไม่ได้กิน
+      }
+
+      // เพิ่มหัวงูใหม่
+      const newHead = { x: headX, y: headY };
+      snake.unshift(newHead);
+    }
+
+    const game = setInterval(draw, 100); // ความเร็วเกม
+  </script>
+</body>
+</html>
